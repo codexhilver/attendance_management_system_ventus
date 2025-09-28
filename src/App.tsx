@@ -187,8 +187,8 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       <div className="text-center bg-white rounded-lg shadow-sm p-6">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">Boundless Players Attendance</h1>
         <div className="text-lg text-gray-600">
-          <div className="font-semibold">{formatDate(currentTime)}</div>
-          <div className="text-2xl font-mono text-blue-600 mt-2">
+          <div className="font-semibold text-4xl">{formatDate(currentTime)}</div>
+          <div className="text-8xl font-mono text-blue-600 mt-2">
             {formatCurrentTime(currentTime)}
           </div>
         </div>

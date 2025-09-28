@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
 export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticated?: boolean }) {
@@ -12,9 +12,14 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
     phone: "",
     position: "",
     team: "",
+    status: "active", // Add status field
   });
 
   const [players, setPlayers] = useState<any[] | undefined>(undefined);
+  const [search, setSearch] = useState("");
+
+  // Ref for the form section
+  const formRef = useRef<HTMLDivElement>(null);
 
   const refresh = () => {
     fetch("http://localhost:5174/api/players")
@@ -47,6 +52,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
           phone: formData.phone || undefined,
           position: formData.position || undefined,
           team: formData.team || undefined,
+          status: formData.status || "active", // Include status
         }),
       });
       if (!res.ok) {
@@ -63,6 +69,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
         phone: "",
         position: "",
         team: "",
+        status: "active",
       });
       setEditingId(null);
       setShowForm(false);
@@ -73,7 +80,8 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Support dropdown/select for status
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -94,8 +102,14 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
       phone: p.phone ?? "",
       position: p.position ?? "",
       team: p.team ?? "",
+      status: p.status ?? "active",
     });
     setShowForm(true);
+
+    // Scroll to form section
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   const handleDelete = async (playerId: string) => {
@@ -117,6 +131,21 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
     refresh();
   };
 
+  // Filtered and unique players
+  const filteredPlayers = Array.from(
+    new Map(
+      (players ?? [])
+        .filter(
+          p =>
+            p.playerId.toLowerCase().includes(search.toLowerCase()) ||
+            p.fullName.toLowerCase().includes(search.toLowerCase()) ||
+            p.email.toLowerCase().includes(search.toLowerCase())
+        )
+        .sort((a, b) => a.playerId.localeCompare(b.playerId))
+        .map(player => [player.playerId, player])
+    ).values()
+  );
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
@@ -133,110 +162,138 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
         )}
       </div>
 
-      {showForm && isAdminAuthenticated && (
-        <form onSubmit={handleSubmit} className="mb-8 p-6 bg-gray-50 rounded-lg">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Player ID *
-              </label>
-              <input
-                type="text"
-                name="playerId"
-                value={formData.playerId}
-                onChange={handleInputChange}
-                disabled={editingId !== null}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+      {/* Form section with ref for scroll */}
+      <div ref={formRef}>
+        {showForm && isAdminAuthenticated && (
+          <form onSubmit={handleSubmit} className="mb-8 p-6 bg-gray-50 rounded-lg">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Player ID *
+                </label>
+                <input
+                  type="text"
+                  name="playerId"
+                  value={formData.playerId}
+                  onChange={handleInputChange}
+                  disabled={editingId !== null}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Age *
+                </label>
+                <input
+                  type="number"
+                  name="age"
+                  value={formData.age}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Position
+                </label>
+                <input
+                  type="text"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Team
+                </label>
+                <input
+                  type="text"
+                  name="team"
+                  value={formData.team}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            <div className="mt-6">
+              <button
+                type="submit"
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                {editingId ? "Update Player" : "Create Player"}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Age *
-              </label>
-              <input
-                type="number"
-                name="age"
-                value={formData.age}
-                onChange={handleInputChange}
-                required
-                min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Position
-              </label>
-              <input
-                type="text"
-                name="position"
-                value={formData.position}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Team
-              </label>
-              <input
-                type="text"
-                name="team"
-                value={formData.team}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          <div className="mt-6">
-            <button
-              type="submit"
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              {editingId ? "Update Player" : "Create Player"}
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4 flex justify-end">
+        <input
+          type="text"
+          placeholder="Search by Player ID, Name, or Email"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
 
       {/* Players List */}
       <div>
@@ -245,8 +302,8 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
           </div>
-        ) : players.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No players registered yet</p>
+        ) : filteredPlayers.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">No players found</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
@@ -258,18 +315,52 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   <th className="text-left py-2 px-4">Email</th>
                   <th className="text-left py-2 px-4">Position</th>
                   <th className="text-left py-2 px-4">Team</th>
+                  <th className="text-left py-2 px-4">Status</th>
                   <th className="text-right py-2 px-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {players.map((player) => (
-                  <tr key={player.playerId} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-4 font-mono">{player.playerId}</td>
-                    <td className="py-2 px-4">{player.fullName}</td>
-                    <td className="py-2 px-4">{player.age}</td>
-                    <td className="py-2 px-4">{player.email}</td>
-                    <td className="py-2 px-4">{player.position || '-'}</td>
-                    <td className="py-2 px-4">{player.team || '-'}</td>
+                {filteredPlayers.map((player, idx) => (
+                  <tr
+                    key={player.playerId}
+                    className={`border-b hover:bg-gray-50 ${player.status === "inactive" ? "bg-red-100" : ""}`}
+                  >
+                    <td className={`py-2 px-4 font-mono ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.playerId}
+                    </td>
+                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.fullName}
+                    </td>
+                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.age}
+                    </td>
+                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.email}
+                    </td>
+                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.position || '-'}
+                    </td>
+                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                      {player.team || '-'}
+                    </td>
+                    <td className="py-2 px-4">
+                      <select
+                        value={player.status || "active"}
+                        onChange={e => {
+                          // Update status locally (no backend)
+                          const updatedPlayers = [...players];
+                          const index = updatedPlayers.findIndex(p => p.playerId === player.playerId);
+                          if (index !== -1) {
+                            updatedPlayers[index] = { ...player, status: e.target.value };
+                            setPlayers(updatedPlayers);
+                          }
+                        }}
+                        className={`px-2 py-1 rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </td>
                     <td className="py-2 px-4 text-right">
                       {isAdminAuthenticated ? (
                         <div className="flex gap-2 justify-end">
