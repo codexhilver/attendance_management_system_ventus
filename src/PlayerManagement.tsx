@@ -21,8 +21,11 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
   // Ref for the form section
   const formRef = useRef<HTMLDivElement>(null);
 
+  // Replace all API URLs with your Vercel domain
+  const API_BASE = "https://boundless-ai-ventus.vercel.app/api";
+
   const refresh = () => {
-    fetch("http://localhost:5174/api/players")
+    fetch(`${API_BASE}/players`)
       .then(async (r) => r.json())
       .then(setPlayers);
   };
@@ -36,8 +39,8 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
     try {
       const creating = editingId === null;
       const url = creating
-        ? "http://localhost:5174/api/players"
-        : `http://localhost:5174/api/players/${encodeURIComponent(editingId)}`;
+        ? `${API_BASE}/players`
+        : `${API_BASE}/players/${encodeURIComponent(editingId)}`;
       const method = creating ? "POST" : "PUT";
       const res = await fetch(url, {
         method,
@@ -118,7 +121,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
       return;
     }
     if (!confirm(`Delete player ${playerId}?`)) return;
-    const res = await fetch(`http://localhost:5174/api/players/${encodeURIComponent(playerId)}`, {
+    const res = await fetch(`${API_BASE}/players/${encodeURIComponent(playerId)}`, {
       method: "DELETE",
       headers: isAdminAuthenticated ? { 'x-admin-pin': 'admin' } : undefined,
     });

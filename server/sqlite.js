@@ -15,7 +15,8 @@ export function getDb(filePath) {
       email TEXT NOT NULL,
       phone TEXT,
       position TEXT,
-      team TEXT
+      team TEXT,
+      status TEXT DEFAULT 'active'
     );
     CREATE TABLE IF NOT EXISTS attendance (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
