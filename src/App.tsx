@@ -405,7 +405,7 @@ function AttendanceTab({
                       Form will clear in {clearCountdown} second{clearCountdown !== 1 ? 's' : ''}...
                     </p>
                     <p className="text-sm text-yellow-600 mt-1">
-                      Re-enter Player ID to perform Time Out
+                      Thanks for your hardwork! :)
                     </p>
                   </div>
                 )}
