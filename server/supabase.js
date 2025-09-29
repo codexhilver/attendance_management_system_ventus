@@ -17,61 +17,29 @@ export const db = {
     const { data, error } = await supabase
       .from('players')
       .select('*')
-      .order('fullname', { ascending: true });
+      .order('fullName', { ascending: true });
     
     if (error) throw error;
-    // Map lowercase column names back to camelCase for the frontend
-    return data.map(player => ({
-      playerId: player.playerid,
-      fullName: player.fullname,
-      age: player.age,
-      email: player.email,
-      phone: player.phone,
-      position: player.position,
-      team: player.team,
-      status: player.status
-    }));
+    return data;
   },
 
   async getPlayer(playerId) {
     const { data, error } = await supabase
       .from('players')
       .select('*')
-      .eq('playerid', playerId)
+      .eq('playerId', playerId)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
     if (!data) return null;
     
-    // Map lowercase column names back to camelCase for the frontend
-    return {
-      playerId: data.playerid,
-      fullName: data.fullname,
-      age: data.age,
-      email: data.email,
-      phone: data.phone,
-      position: data.position,
-      team: data.team,
-      status: data.status
-    };
+    return data;
   },
 
   async createPlayer(playerData) {
-    // Map camelCase to lowercase column names
-    const mappedData = {
-      playerid: playerData.playerId,
-      fullname: playerData.fullName,
-      age: playerData.age,
-      email: playerData.email,
-      phone: playerData.phone,
-      position: playerData.position,
-      team: playerData.team,
-      status: playerData.status
-    };
-    
     const { data, error } = await supabase
       .from('players')
-      .insert([mappedData])
+      .insert([playerData])
       .select()
       .single();
     
@@ -80,21 +48,10 @@ export const db = {
   },
 
   async updatePlayer(playerId, playerData) {
-    // Map camelCase to lowercase column names
-    const mappedData = {
-      fullname: playerData.fullName,
-      age: playerData.age,
-      email: playerData.email,
-      phone: playerData.phone,
-      position: playerData.position,
-      team: playerData.team,
-      status: playerData.status
-    };
-    
     const { data, error } = await supabase
       .from('players')
-      .update(mappedData)
-      .eq('playerid', playerId)
+      .update(playerData)
+      .eq('playerId', playerId)
       .select()
       .single();
     
@@ -107,13 +64,13 @@ export const db = {
     await supabase
       .from('attendance')
       .delete()
-      .eq('playerid', playerId);
+      .eq('playerId', playerId);
     
     // Then delete the player
     const { error } = await supabase
       .from('players')
       .delete()
-      .eq('playerid', playerId);
+      .eq('playerId', playerId);
     
     if (error) throw error;
     return true;
@@ -126,19 +83,10 @@ export const db = {
       .from('attendance')
       .select('*')
       .eq('date', today)
-      .order('playername', { ascending: true });
+      .order('playerName', { ascending: true });
     
     if (error) throw error;
-    // Map lowercase column names back to camelCase for the frontend
-    return data.map(record => ({
-      id: record.id,
-      playerId: record.playerid,
-      playerName: record.playername,
-      date: record.date,
-      timeIn: record.timein,
-      timeOut: record.timeout,
-      status: record.status
-    }));
+    return data;
   },
 
   async getAttendanceByDate(date) {
@@ -146,19 +94,10 @@ export const db = {
       .from('attendance')
       .select('*')
       .eq('date', date)
-      .order('playername', { ascending: true });
+      .order('playerName', { ascending: true });
     
     if (error) throw error;
-    // Map lowercase column names back to camelCase for the frontend
-    return data.map(record => ({
-      id: record.id,
-      playerId: record.playerid,
-      playerName: record.playername,
-      date: record.date,
-      timeIn: record.timein,
-      timeOut: record.timeout,
-      status: record.status
-    }));
+    return data;
   },
 
   async getAttendanceByDateRange(startDate, endDate) {
@@ -168,19 +107,10 @@ export const db = {
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: true })
-      .order('playername', { ascending: true });
+      .order('playerName', { ascending: true });
     
     if (error) throw error;
-    // Map lowercase column names back to camelCase for the frontend
-    return data.map(record => ({
-      id: record.id,
-      playerId: record.playerid,
-      playerName: record.playername,
-      date: record.date,
-      timeIn: record.timein,
-      timeOut: record.timeout,
-      status: record.status
-    }));
+    return data;
   },
 
   async getPlayerAttendanceToday(playerId) {
@@ -188,23 +118,14 @@ export const db = {
     const { data, error } = await supabase
       .from('attendance')
       .select('*')
-      .eq('playerid', playerId)
+      .eq('playerId', playerId)
       .eq('date', today)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
     if (!data) return null;
     
-    // Map lowercase column names back to camelCase for the frontend
-    return {
-      id: data.id,
-      playerId: data.playerid,
-      playerName: data.playername,
-      date: data.date,
-      timeIn: data.timein,
-      timeOut: data.timeout,
-      status: data.status
-    };
+    return data;
   },
 
   async timeIn(playerId, playerName) {
@@ -222,7 +143,7 @@ export const db = {
       // Update existing record
       const { data, error } = await supabase
         .from('attendance')
-        .update({ timein: now, status: 'present' })
+        .update({ timeIn: now, status: 'present' })
         .eq('id', existing.id)
         .select()
         .single();
@@ -234,10 +155,10 @@ export const db = {
       const { data, error } = await supabase
         .from('attendance')
         .insert([{
-          playerid: playerId,
-          playername: playerName,
+          playerId: playerId,
+          playerName: playerName,
           date: today,
-          timein: now,
+          timeIn: now,
           status: 'present'
         }])
         .select()
@@ -268,7 +189,7 @@ export const db = {
     
     const { data, error } = await supabase
       .from('attendance')
-      .update({ timeout: now })
+      .update({ timeOut: now })
       .eq('id', record.id)
       .select()
       .single();
@@ -280,16 +201,15 @@ export const db = {
   async updateAttendance(playerId, date, updates) {
     const theDate = date || new Date().toISOString().slice(0, 10);
     
-    // Map camelCase to lowercase column names
     const mappedUpdates = {};
     if (updates.status !== undefined) mappedUpdates.status = updates.status;
-    if (updates.timeIn !== undefined) mappedUpdates.timein = updates.timeIn;
-    if (updates.timeOut !== undefined) mappedUpdates.timeout = updates.timeOut;
+    if (updates.timeIn !== undefined) mappedUpdates.timeIn = updates.timeIn;
+    if (updates.timeOut !== undefined) mappedUpdates.timeOut = updates.timeOut;
     
     const { data, error } = await supabase
       .from('attendance')
       .update(mappedUpdates)
-      .eq('playerid', playerId)
+      .eq('playerId', playerId)
       .eq('date', theDate)
       .select()
       .single();
@@ -304,7 +224,7 @@ export const db = {
     const { error } = await supabase
       .from('attendance')
       .delete()
-      .eq('playerid', playerId)
+      .eq('playerId', playerId)
       .eq('date', theDate);
     
     if (error) throw error;
