@@ -80,6 +80,10 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       setAttendance(null);
       return;
     }
+    // Reset to loading state when playerId changes
+    setPlayer(undefined);
+    setAttendance(null);
+    
     const API_BASE = import.meta.env.VITE_API_URL || '';
     fetch(`${API_BASE}/api/players/${encodeURIComponent(playerId)}`)
       .then(async (r) => (r.ok ? r.json() : null))
