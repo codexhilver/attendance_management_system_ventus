@@ -235,6 +235,9 @@ app.delete("/api/attendance", async (req, res) => {
 app.get("/api/attendance/export/today", async (req, res) => {
   try {
     const rows = await db.getTodayAttendance();
+    // Get timezone offset from query param (in minutes, e.g., -480 for UTC+8)
+    const tzOffset = req.query.tzOffset ? parseInt(req.query.tzOffset) : 0;
+    
     const header = ["Player ID", "Name", "Date", "Time In", "Time Out", "Total Hours", "Status"];
     const escape = (v) => {
       if (v === null || v === undefined) return "";
@@ -244,7 +247,16 @@ app.get("/api/attendance/export/today", async (req, res) => {
       }
       return s;
     };
-    const formatTime = (ms) => (ms ? new Date(ms).toLocaleTimeString() : "");
+    // Format time with timezone offset applied
+    const formatTime = (ms) => {
+      if (!ms) return "";
+      const date = new Date(ms - (tzOffset * 60 * 1000)); // Apply offset
+      const hours = date.getUTCHours();
+      const minutes = date.getUTCMinutes();
+      const seconds = date.getUTCSeconds();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
     const toHMS = (ms) => {
       const totalSeconds = Math.max(0, Math.floor(ms / 1000));
       const h = Math.floor(totalSeconds / 3600);

@@ -25,7 +25,7 @@ export default function App() {
         <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
         <div className="flex items-center gap-4">
           <a
-            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
+            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today?tzOffset=${new Date().getTimezoneOffset()}`}
             className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
           >
             Export Today CSV
