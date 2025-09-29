@@ -25,7 +25,7 @@ export default function App() {
         <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
         <div className="flex items-center gap-4">
           <a
-            href={`http://localhost:5174/api/attendance/export/today`}
+            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5174'}/api/attendance/export/today`}
             className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
           >
             Export Today CSV
@@ -64,7 +64,8 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
 
   useEffect(() => {
     // today's attendance table
-    fetch("http://localhost:5174/api/attendance/today").then(async (r) => {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+    fetch(`${API_BASE}/api/attendance/today`).then(async (r) => {
       setTodayAttendance(await r.json());
     });
   }, [currentTime]);
@@ -75,17 +76,19 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       setAttendance(null);
       return;
     }
-    fetch(`http://localhost:5174/api/players/${encodeURIComponent(playerId)}`)
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+    fetch(`${API_BASE}/api/players/${encodeURIComponent(playerId)}`)
       .then(async (r) => (r.ok ? r.json() : null))
       .then((p) => setPlayer(p));
-    fetch(`http://localhost:5174/api/attendance/player/today?playerId=${encodeURIComponent(playerId)}`)
+    fetch(`${API_BASE}/api/attendance/player/today?playerId=${encodeURIComponent(playerId)}`)
       .then(async (r) => r.json())
       .then((a) => setAttendance(a));
   }, [playerId]);
 
   const reloadAttendance = async (id: string) => {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
     const r = await fetch(
-      `http://localhost:5174/api/attendance/player/today?playerId=${encodeURIComponent(id)}`
+      `${API_BASE}/api/attendance/player/today?playerId=${encodeURIComponent(id)}`
     );
     const a = await r.json();
     setAttendance(a);
@@ -94,7 +97,8 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   const handleTimeIn = async () => {
     if (!player) return;
     try {
-      const res = await fetch("http://localhost:5174/api/attendance/time-in", {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const res = await fetch(`${API_BASE}/api/attendance/time-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId: player.playerId, playerName: player.fullName }),
@@ -130,7 +134,8 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   const handleTimeOut = async () => {
     if (!player) return;
     try {
-      const res = await fetch("http://localhost:5174/api/attendance/time-out", {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const res = await fetch(`${API_BASE}/api/attendance/time-out`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId: player.playerId }),
@@ -447,7 +452,8 @@ function AttendanceTab({
                           <button
                             onClick={async () => {
                               const newStatus = record.status === 'present' ? 'partial' : record.status === 'partial' ? 'absent' : 'present';
-                              const res = await fetch('http://localhost:5174/api/attendance', {
+                              const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+                              const res = await fetch(`${API_BASE}/api/attendance`, {
                                 method: 'PATCH',
                                 headers: { 'Content-Type': 'application/json', 'x-admin-pin': 'admin' },
                                 body: JSON.stringify({ playerId: record.playerId, date: record.date, status: newStatus })
@@ -458,7 +464,7 @@ function AttendanceTab({
                                 return;
                               }
                               toast.success('Status updated');
-                              fetch('http://localhost:5174/api/attendance/today').then(async (r) => setTodayAttendance(await r.json()));
+                              fetch(`${API_BASE}/api/attendance/today`).then(async (r) => setTodayAttendance(await r.json()));
                             }}
                             className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                           >
@@ -467,7 +473,8 @@ function AttendanceTab({
                           <button
                             onClick={async () => {
                               if (!confirm(`Delete today's attendance for ${record.playerName}?`)) return;
-                              const url = `http://localhost:5174/api/attendance?playerId=${encodeURIComponent(record.playerId)}&date=${encodeURIComponent(record.date)}`;
+                              const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+                              const url = `${API_BASE}/api/attendance?playerId=${encodeURIComponent(record.playerId)}&date=${encodeURIComponent(record.date)}`;
                               const res = await fetch(url, { method: 'DELETE', headers: { 'x-admin-pin': 'admin' } });
                               if (!res.ok) {
                                 const data = await res.json().catch(() => ({}));
@@ -475,7 +482,7 @@ function AttendanceTab({
                                 return;
                               }
                               toast.success('Attendance deleted');
-                              fetch('http://localhost:5174/api/attendance/today').then(async (r) => setTodayAttendance(await r.json()));
+                              fetch(`${API_BASE}/api/attendance/today`).then(async (r) => setTodayAttendance(await r.json()));
                             }}
                             className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                           >
