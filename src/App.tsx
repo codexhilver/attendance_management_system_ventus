@@ -212,6 +212,25 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       setAttendance((prev: any) => (prev ? { ...prev, timeOut: now } : prev));
       setCurrentTime(new Date());
       await reloadAttendance(player.playerId);
+      
+      // Start countdown and clear player ID after 3 seconds
+      setClearCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setClearCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimeout(() => {
+        setPlayerId("");
+        setPlayer(null);
+        setAttendance(null);
+        setClearCountdown(null);
+      }, 3000);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to time out");
     }
