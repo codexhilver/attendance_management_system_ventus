@@ -81,12 +81,12 @@ app.post("/api/players", async (req, res) => {
 
 app.put("/api/players/:playerId", async (req, res) => {
   const { playerId } = req.params;
-  const { fullName, age, email, phone, position, team } = req.body ?? {};
+  const { fullName, age, email, phone, position, team, status } = req.body ?? {};
   if (!fullName || typeof age !== "number" || !email) {
     return res.status(400).json({ error: "Missing required fields" });
   }
   try {
-    await db.updatePlayer(playerId, { fullName, age, email, phone, position, team });
+    await db.updatePlayer(playerId, { fullName, age, email, phone, position, team, status });
     res.json({ ok: true });
   } catch (e) {
     if (String(e.message).includes("No rows")) {
@@ -270,17 +270,14 @@ app.get("/api/attendance/export/today", async (req, res) => {
       const pad = (n) => String(n).padStart(2, '0');
       return `${hours12}:${pad(minutes)}:${pad(seconds)} ${period}`;
     };
-    const toHMS = (ms) => {
+    const toDecimalHours = (ms) => {
       const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      const s = totalSeconds % 60;
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+      const hours = totalSeconds / 3600;
+      return hours.toFixed(2); // Return as decimal number string
     };
     const now = Date.now();
     const rowLines = rows.map((r) => {
-      const worked = r.timeIn ? toHMS(Math.max(0, (r.timeOut ?? now) - r.timeIn)) : "";
+      const worked = r.timeIn ? toDecimalHours(Math.max(0, (r.timeOut ?? now) - r.timeIn)) : "";
       return [r.playerId, r.playerName, r.date, formatTime(r.timeIn), formatTime(r.timeOut), worked, r.status]
         .map(escape)
         .join(",");

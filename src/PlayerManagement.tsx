@@ -350,13 +350,45 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                       {isAdminAuthenticated ? (
                         <select
                           value={player.status || "active"}
-                          onChange={e => {
-                            // Update status locally (no backend)
-                            const updatedPlayers = [...players];
-                            const index = updatedPlayers.findIndex(p => p.playerId === player.playerId);
-                            if (index !== -1) {
-                              updatedPlayers[index] = { ...player, status: e.target.value };
-                              setPlayers(updatedPlayers);
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            try {
+                              // Update status on backend
+                              const res = await fetch(`${API_BASE}/api/players/${encodeURIComponent(player.playerId)}`, {
+                                method: 'PUT',
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  'x-admin-pin': 'admin'
+                                },
+                                body: JSON.stringify({
+                                  playerId: player.playerId,
+                                  fullName: player.fullName,
+                                  age: player.age,
+                                  email: player.email,
+                                  phone: player.phone,
+                                  position: player.position,
+                                  team: player.team,
+                                  status: newStatus
+                                })
+                              });
+                              
+                              if (!res.ok) {
+                                const data = await res.json().catch(() => ({}));
+                                throw new Error(data.error || 'Failed to update status');
+                              }
+                              
+                              // Update local state after successful backend update
+                              const updatedPlayers = [...players];
+                              const index = updatedPlayers.findIndex(p => p.playerId === player.playerId);
+                              if (index !== -1) {
+                                updatedPlayers[index] = { ...player, status: newStatus };
+                                setPlayers(updatedPlayers);
+                              }
+                              toast.success('Status updated successfully');
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : 'Failed to update status');
+                              // Refresh to get correct state from server
+                              refresh();
                             }
                           }}
                           className={`px-2 py-1 rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
