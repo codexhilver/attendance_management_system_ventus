@@ -1,5 +1,11 @@
 import { sql } from '@vercel/postgres';
 
+// Helper to get today's date in UTC+8
+function getTodayUTC8() {
+  const utc8Date = new Date(Date.now() + (8 * 60 * 60 * 1000));
+  return utc8Date.toISOString().slice(0, 10);
+}
+
 // Ensure schema exists on first import
 let ensured = false;
 async function ensureSchema() {
@@ -78,7 +84,7 @@ export const db = {
 
   async getTodayAttendance() {
     await ensureSchema();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayUTC8();
     const { rows } = await sql`
       SELECT * FROM attendance WHERE date = ${today} ORDER BY "playerName" ASC
     `;
@@ -117,7 +123,7 @@ export const db = {
 
   async getPlayerAttendanceToday(playerId) {
     await ensureSchema();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayUTC8();
     const { rows } = await sql`
       SELECT * FROM attendance WHERE "playerId" = ${playerId} AND date = ${today} LIMIT 1
     `;
@@ -132,7 +138,7 @@ export const db = {
 
   async timeIn(playerId, playerName) {
     await ensureSchema();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayUTC8();
     const now = Date.now();
 
     const existing = await this.getPlayerAttendanceToday(playerId);
@@ -184,7 +190,7 @@ export const db = {
 
   async updateAttendance(playerId, date, updates) {
     await ensureSchema();
-    const theDate = date || new Date().toISOString().slice(0, 10);
+    const theDate = date || getTodayUTC8();
 
     const fields = [];
     const values = [];
@@ -210,7 +216,7 @@ export const db = {
 
   async deleteAttendance(playerId, date) {
     await ensureSchema();
-    const theDate = date || new Date().toISOString().slice(0, 10);
+    const theDate = date || getTodayUTC8();
     await sql`DELETE FROM attendance WHERE "playerId" = ${playerId} AND date = ${theDate}`;
     return true;
   }

@@ -9,13 +9,23 @@ app.use(cors());
 app.use(express.json());
 
 function getToday() {
-  return new Date().toISOString().slice(0, 10);
+  // Get today's date in UTC+8
+  const utc8Date = new Date(Date.now() + (8 * 60 * 60 * 1000));
+  return utc8Date.toISOString().slice(0, 10);
 }
 
 function formatLocal(ms) {
   if (ms === null || ms === undefined) return null;
   try {
-    return new Date(Number(ms)).toLocaleString();
+    // Format in UTC+8 with 24-hour format
+    const utc8Date = new Date(Number(ms) + (8 * 60 * 60 * 1000));
+    const year = utc8Date.getUTCFullYear();
+    const month = String(utc8Date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(utc8Date.getUTCDate()).padStart(2, '0');
+    const hours = String(utc8Date.getUTCHours()).padStart(2, '0');
+    const minutes = String(utc8Date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(utc8Date.getUTCSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   } catch {
     return null;
   }
@@ -235,8 +245,6 @@ app.delete("/api/attendance", async (req, res) => {
 app.get("/api/attendance/export/today", async (req, res) => {
   try {
     const rows = await db.getTodayAttendance();
-    // Get timezone offset from query param (in minutes, e.g., -480 for UTC+8)
-    const tzOffset = req.query.tzOffset ? parseInt(req.query.tzOffset) : 0;
     
     const header = ["Player ID", "Name", "Date", "Time In", "Time Out", "Total Hours", "Status"];
     const escape = (v) => {
@@ -247,15 +255,20 @@ app.get("/api/attendance/export/today", async (req, res) => {
       }
       return s;
     };
-    // Format time with timezone offset applied
+    // Format time in UTC+8 with 12-hour format for CSV
     const formatTime = (ms) => {
       if (!ms) return "";
-      const date = new Date(ms - (tzOffset * 60 * 1000)); // Apply offset
-      const hours = date.getUTCHours();
-      const minutes = date.getUTCMinutes();
-      const seconds = date.getUTCSeconds();
+      // Convert to UTC+8 (add 8 hours in milliseconds)
+      const utc8Date = new Date(ms + (8 * 60 * 60 * 1000));
+      const hours24 = utc8Date.getUTCHours();
+      const minutes = utc8Date.getUTCMinutes();
+      const seconds = utc8Date.getUTCSeconds();
+      
+      // Convert to 12-hour format
+      const period = hours24 >= 12 ? 'PM' : 'AM';
+      const hours12 = hours24 % 12 || 12; // Convert 0 to 12
       const pad = (n) => String(n).padStart(2, '0');
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      return `${hours12}:${pad(minutes)}:${pad(seconds)} ${period}`;
     };
     const toHMS = (ms) => {
       const totalSeconds = Math.max(0, Math.floor(ms / 1000));

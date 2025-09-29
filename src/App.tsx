@@ -25,7 +25,7 @@ export default function App() {
         <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
         <div className="flex items-center gap-4">
           <a
-            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today?tzOffset=${new Date().getTimezoneOffset()}`}
+            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
             className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
           >
             Export Today CSV
@@ -160,7 +160,13 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   };
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString();
+    // Display in UTC+8 with 24-hour format (military time)
+    const utc8Date = new Date(timestamp + (8 * 60 * 60 * 1000));
+    const hours = utc8Date.getUTCHours();
+    const minutes = utc8Date.getUTCMinutes();
+    const seconds = utc8Date.getUTCSeconds();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
   const formatDuration = (ms: number) => {
@@ -182,12 +188,13 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   };
 
   const formatCurrentTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour12: true,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+    // Display current time in UTC+8 with 24-hour format (military time)
+    const utc8Date = new Date(date.getTime() + (8 * 60 * 60 * 1000));
+    const hours = utc8Date.getUTCHours();
+    const minutes = utc8Date.getUTCMinutes();
+    const seconds = utc8Date.getUTCSeconds();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
   return (
