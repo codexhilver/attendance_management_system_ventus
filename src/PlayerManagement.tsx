@@ -347,22 +347,30 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                       {player.team || '-'}
                     </td>
                     <td className="py-2 px-4">
-                      <select
-                        value={player.status || "active"}
-                        onChange={e => {
-                          // Update status locally (no backend)
-                          const updatedPlayers = [...players];
-                          const index = updatedPlayers.findIndex(p => p.playerId === player.playerId);
-                          if (index !== -1) {
-                            updatedPlayers[index] = { ...player, status: e.target.value };
-                            setPlayers(updatedPlayers);
-                          }
-                        }}
-                        className={`px-2 py-1 rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                      {isAdminAuthenticated ? (
+                        <select
+                          value={player.status || "active"}
+                          onChange={e => {
+                            // Update status locally (no backend)
+                            const updatedPlayers = [...players];
+                            const index = updatedPlayers.findIndex(p => p.playerId === player.playerId);
+                            if (index !== -1) {
+                              updatedPlayers[index] = { ...player, status: e.target.value };
+                              setPlayers(updatedPlayers);
+                            }
+                          }}
+                          className={`px-2 py-1 rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      ) : (
+                        <span className={`px-2 py-1 rounded font-semibold capitalize ${
+                          player.status === "inactive" ? "text-red-600" : "text-green-600"
+                        }`}>
+                          {player.status || "active"}
+                        </span>
+                      )}
                     </td>
                     <td className="py-2 px-4 text-right">
                       {isAdminAuthenticated ? (
