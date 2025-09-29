@@ -82,7 +82,11 @@ export const db = {
     const { rows } = await sql`
       SELECT * FROM attendance WHERE date = ${today} ORDER BY "playerName" ASC
     `;
-    return rows;
+    return rows.map(r => ({
+      ...r,
+      timeIn: r.timeIn ? Number(r.timeIn) : null,
+      timeOut: r.timeOut ? Number(r.timeOut) : null
+    }));
   },
 
   async getAttendanceByDate(date) {
@@ -90,7 +94,11 @@ export const db = {
     const { rows } = await sql`
       SELECT * FROM attendance WHERE date = ${date} ORDER BY "playerName" ASC
     `;
-    return rows;
+    return rows.map(r => ({
+      ...r,
+      timeIn: r.timeIn ? Number(r.timeIn) : null,
+      timeOut: r.timeOut ? Number(r.timeOut) : null
+    }));
   },
 
   async getAttendanceByDateRange(startDate, endDate) {
@@ -100,7 +108,11 @@ export const db = {
       WHERE date >= ${startDate} AND date <= ${endDate}
       ORDER BY date ASC, "playerName" ASC
     `;
-    return rows;
+    return rows.map(r => ({
+      ...r,
+      timeIn: r.timeIn ? Number(r.timeIn) : null,
+      timeOut: r.timeOut ? Number(r.timeOut) : null
+    }));
   },
 
   async getPlayerAttendanceToday(playerId) {
@@ -109,7 +121,13 @@ export const db = {
     const { rows } = await sql`
       SELECT * FROM attendance WHERE "playerId" = ${playerId} AND date = ${today} LIMIT 1
     `;
-    return rows[0] || null;
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...row,
+      timeIn: row.timeIn ? Number(row.timeIn) : null,
+      timeOut: row.timeOut ? Number(row.timeOut) : null
+    };
   },
 
   async timeIn(playerId, playerName) {
@@ -123,7 +141,12 @@ export const db = {
       const { rows } = await sql`
         UPDATE attendance SET "timeIn" = ${now}, status = 'present' WHERE id = ${existing.id} RETURNING *
       `;
-      return rows[0];
+      const row = rows[0];
+      return {
+        ...row,
+        timeIn: row.timeIn ? Number(row.timeIn) : null,
+        timeOut: row.timeOut ? Number(row.timeOut) : null
+      };
     } else {
       const { rows } = await sql`
         INSERT INTO attendance ("playerId", "playerName", date, "timeIn", status)
@@ -131,7 +154,12 @@ export const db = {
         ON CONFLICT ("playerId", date) DO UPDATE SET "timeIn" = EXCLUDED."timeIn", status = EXCLUDED.status
         RETURNING *
       `;
-      return rows[0];
+      const row = rows[0];
+      return {
+        ...row,
+        timeIn: row.timeIn ? Number(row.timeIn) : null,
+        timeOut: row.timeOut ? Number(row.timeOut) : null
+      };
     }
   },
 
@@ -146,7 +174,12 @@ export const db = {
     const { rows } = await sql`
       UPDATE attendance SET "timeOut" = ${now} WHERE id = ${record.id} RETURNING *
     `;
-    return rows[0];
+    const row = rows[0];
+    return {
+      ...row,
+      timeIn: row.timeIn ? Number(row.timeIn) : null,
+      timeOut: row.timeOut ? Number(row.timeOut) : null
+    };
   },
 
   async updateAttendance(playerId, date, updates) {
@@ -166,7 +199,13 @@ export const db = {
     const params = values.concat([playerId, theDate]);
     const text = `UPDATE attendance SET ${sets} WHERE "playerId" = $${fields.length + 1} AND date = $${fields.length + 2} RETURNING *`;
     const { rows } = await sql.query(text, params);
-    return rows[0];
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...row,
+      timeIn: row.timeIn ? Number(row.timeIn) : null,
+      timeOut: row.timeOut ? Number(row.timeOut) : null
+    };
   },
 
   async deleteAttendance(playerId, date) {
