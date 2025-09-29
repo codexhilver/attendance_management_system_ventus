@@ -22,7 +22,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
   const formRef = useRef<HTMLDivElement>(null);
 
   // Use environment variable for API base URL
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+  const API_BASE = import.meta.env.VITE_API_URL || '';
 
   const refresh = () => {
     fetch(`${API_BASE}/api/players`)

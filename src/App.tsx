@@ -25,7 +25,7 @@ export default function App() {
         <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
         <div className="flex items-center gap-4">
           <a
-            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5174'}/api/attendance/export/today`}
+            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
             className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
           >
             Export Today CSV
@@ -62,12 +62,16 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   }, []);
 
 
+  const refreshToday = async () => {
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const r = await fetch(`${API_BASE}/api/attendance/today`);
+    const data = await r.json();
+    setTodayAttendance(data);
+  };
+
   useEffect(() => {
     // today's attendance table
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
-    fetch(`${API_BASE}/api/attendance/today`).then(async (r) => {
-      setTodayAttendance(await r.json());
-    });
+    refreshToday();
   }, [currentTime]);
 
   useEffect(() => {
@@ -76,7 +80,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       setAttendance(null);
       return;
     }
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+    const API_BASE = import.meta.env.VITE_API_URL || '';
     fetch(`${API_BASE}/api/players/${encodeURIComponent(playerId)}`)
       .then(async (r) => (r.ok ? r.json() : null))
       .then((p) => setPlayer(p));
@@ -86,7 +90,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   }, [playerId]);
 
   const reloadAttendance = async (id: string) => {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+    const API_BASE = import.meta.env.VITE_API_URL || '';
     const r = await fetch(
       `${API_BASE}/api/attendance/player/today?playerId=${encodeURIComponent(id)}`
     );
@@ -97,7 +101,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   const handleTimeIn = async () => {
     if (!player) return;
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const API_BASE = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_BASE}/api/attendance/time-in`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +114,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       toast.success("Timed in successfully!");
       // Optimistically update local state so Time Out enables immediately
       const now = Date.now();
-      setAttendance((prev) =>
+      setAttendance((prev: any) =>
         prev
           ? { ...prev, timeIn: prev.timeIn ?? now, status: prev.status ?? "present" }
           : {
@@ -134,7 +138,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   const handleTimeOut = async () => {
     if (!player) return;
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const API_BASE = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_BASE}/api/attendance/time-out`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,7 +151,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       toast.success("Timed out successfully!");
       // Optimistically set timeOut
       const now = Date.now();
-      setAttendance((prev) => (prev ? { ...prev, timeOut: now } : prev));
+      setAttendance((prev: any) => (prev ? { ...prev, timeOut: now } : prev));
       setCurrentTime(new Date());
       await reloadAttendance(player.playerId);
     } catch (error) {
@@ -238,6 +242,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
               handleTimeOut={handleTimeOut}
               formatTime={formatTime}
               isAdminAuthenticated={isAdminAuthenticated}
+              onRefreshToday={refreshToday}
             />
           ) : (
             <PlayerManagement isAdminAuthenticated={isAdminAuthenticated} />
@@ -258,6 +263,7 @@ function AttendanceTab({
   handleTimeOut,
   formatTime,
   isAdminAuthenticated,
+  onRefreshToday,
 }: {
   playerId: string;
   setPlayerId: (id: string) => void;
@@ -268,6 +274,7 @@ function AttendanceTab({
   handleTimeOut: () => void;
   formatTime: (timestamp: number) => string;
   isAdminAuthenticated: boolean;
+  onRefreshToday: () => Promise<void> | void;
 }) {
   return (
     <div className="space-y-8">
@@ -452,7 +459,7 @@ function AttendanceTab({
                           <button
                             onClick={async () => {
                               const newStatus = record.status === 'present' ? 'partial' : record.status === 'partial' ? 'absent' : 'present';
-                              const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+                              const API_BASE = import.meta.env.VITE_API_URL || '';
                               const res = await fetch(`${API_BASE}/api/attendance`, {
                                 method: 'PATCH',
                                 headers: { 'Content-Type': 'application/json', 'x-admin-pin': 'admin' },
@@ -464,7 +471,7 @@ function AttendanceTab({
                                 return;
                               }
                               toast.success('Status updated');
-                              fetch(`${API_BASE}/api/attendance/today`).then(async (r) => setTodayAttendance(await r.json()));
+                              await onRefreshToday();
                             }}
                             className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                           >
@@ -473,7 +480,7 @@ function AttendanceTab({
                           <button
                             onClick={async () => {
                               if (!confirm(`Delete today's attendance for ${record.playerName}?`)) return;
-                              const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+                              const API_BASE = import.meta.env.VITE_API_URL || '';
                               const url = `${API_BASE}/api/attendance?playerId=${encodeURIComponent(record.playerId)}&date=${encodeURIComponent(record.date)}`;
                               const res = await fetch(url, { method: 'DELETE', headers: { 'x-admin-pin': 'admin' } });
                               if (!res.ok) {
@@ -482,7 +489,7 @@ function AttendanceTab({
                                 return;
                               }
                               toast.success('Attendance deleted');
-                              fetch(`${API_BASE}/api/attendance/today`).then(async (r) => setTodayAttendance(await r.json()));
+                              await onRefreshToday();
                             }}
                             className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                           >

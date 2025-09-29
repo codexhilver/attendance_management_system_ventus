@@ -269,9 +269,15 @@ app.get("/api/attendance/export/today", async (req, res) => {
   }
 });
 
+// When running on Vercel serverless, we export the Express app as the handler.
+// When running locally (e.g., `npm run dev`), we start a listener.
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5174;
-app.listen(PORT, () => {
-  console.log(`Local API listening on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Local API listening on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
 
 
