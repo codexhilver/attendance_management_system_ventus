@@ -158,11 +158,28 @@ app.get("/api/attendance/player/today", async (req, res) => {
   if (!playerId) return res.status(400).json({ error: "playerId is required" });
   try {
     const row = await db.getPlayerAttendanceToday(String(playerId));
-    if (!row) return res.json(null);
+    
+    // Also check yesterday for pending time out (night shift support)
+    const yesterdayRow = await db.getPlayerAttendanceYesterday(String(playerId));
+    const hasPendingTimeOut = yesterdayRow && yesterdayRow.timeIn && !yesterdayRow.timeOut;
+    
+    if (!row && !hasPendingTimeOut) return res.json(null);
+    
+    // If there's a pending time out from yesterday, return that record
+    if (!row && hasPendingTimeOut) {
+      return res.json({
+        ...yesterdayRow,
+        timeInFormatted: formatLocal(yesterdayRow.timeIn),
+        timeOutFormatted: formatLocal(yesterdayRow.timeOut),
+        isFromYesterday: true,
+      });
+    }
+    
     res.json({
       ...row,
       timeInFormatted: formatLocal(row.timeIn),
       timeOutFormatted: formatLocal(row.timeOut),
+      hasPendingTimeOutFromYesterday: hasPendingTimeOut,
     });
   } catch (error) {
     console.error('Error fetching player attendance:', error);
@@ -260,7 +277,7 @@ app.get("/api/attendance/export/today", async (req, res) => {
   try {
     const rows = await db.getTodayAttendance();
     
-    const header = ["Player ID", "Name", "Date", "Time In", "Time Out", "Total Hours", "Status"];
+    const header = ["Player ID", "Name", "Date", "Time In", "Time Out", "Total Hours", "Status", "Notes"];
     const escape = (v) => {
       if (v === null || v === undefined) return "";
       const s = String(v);
@@ -284,6 +301,11 @@ app.get("/api/attendance/export/today", async (req, res) => {
       const pad = (n) => String(n).padStart(2, '0');
       return `${hours12}:${pad(minutes)}:${pad(seconds)} ${period}`;
     };
+    const getDateFromTimestamp = (ms) => {
+      if (!ms) return "";
+      const utc8Date = new Date(ms + (8 * 60 * 60 * 1000));
+      return utc8Date.toISOString().slice(0, 10);
+    };
     const toDecimalHours = (ms) => {
       const totalSeconds = Math.max(0, Math.floor(ms / 1000));
       const hours = totalSeconds / 3600;
@@ -292,7 +314,13 @@ app.get("/api/attendance/export/today", async (req, res) => {
     const now = Date.now();
     const rowLines = rows.map((r) => {
       const worked = r.timeIn ? toDecimalHours(Math.max(0, (r.timeOut ?? now) - r.timeIn)) : "";
-      return [r.playerId, r.playerName, r.date, formatTime(r.timeIn), formatTime(r.timeOut), worked, r.status]
+      // Check if shift spans multiple days (night shift)
+      const timeInDate = getDateFromTimestamp(r.timeIn);
+      const timeOutDate = r.timeOut ? getDateFromTimestamp(r.timeOut) : "";
+      const isNightShift = timeOutDate && timeInDate !== timeOutDate;
+      const notes = isNightShift ? "Night Shift (spans to next day)" : "";
+      
+      return [r.playerId, r.playerName, r.date, formatTime(r.timeIn), formatTime(r.timeOut), worked, r.status, notes]
         .map(escape)
         .join(",");
     });
@@ -303,6 +331,96 @@ app.get("/api/attendance/export/today", async (req, res) => {
   } catch (error) {
     console.error('Error exporting CSV:', error);
     res.status(500).json({ error: "Failed to export CSV" });
+  }
+});
+
+// CSV export for a specific date
+app.get("/api/attendance/export/by-date", async (req, res) => {
+  const date = req.query.date;
+  if (!date) return res.status(400).json({ error: "date query param required (YYYY-MM-DD)" });
+  
+  try {
+    const rows = await db.getAttendanceByDate(String(date));
+    
+    const header = ["Player ID", "Name", "Date", "Time In", "Time Out", "Total Hours", "Status", "Notes"];
+    const escape = (v) => {
+      if (v === null || v === undefined) return "";
+      const s = String(v);
+      if (s.includes(",") || s.includes("\n") || s.includes('"')) {
+        return '"' + s.replaceAll('"', '""') + '"';
+      }
+      return s;
+    };
+    // Format time in UTC+8 with 12-hour format for CSV
+    const formatTime = (ms) => {
+      if (!ms) return "";
+      // Convert to UTC+8 (add 8 hours in milliseconds)
+      const utc8Date = new Date(ms + (8 * 60 * 60 * 1000));
+      const hours24 = utc8Date.getUTCHours();
+      const minutes = utc8Date.getUTCMinutes();
+      const seconds = utc8Date.getUTCSeconds();
+      
+      // Convert to 12-hour format
+      const period = hours24 >= 12 ? 'PM' : 'AM';
+      const hours12 = hours24 % 12 || 12; // Convert 0 to 12
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${hours12}:${pad(minutes)}:${pad(seconds)} ${period}`;
+    };
+    const getDateFromTimestamp = (ms) => {
+      if (!ms) return "";
+      const utc8Date = new Date(ms + (8 * 60 * 60 * 1000));
+      return utc8Date.toISOString().slice(0, 10);
+    };
+    const toDecimalHours = (ms) => {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = totalSeconds / 3600;
+      return hours.toFixed(2); // Return as decimal number string
+    };
+    const now = Date.now();
+    const rowLines = rows.map((r) => {
+      const worked = r.timeIn ? toDecimalHours(Math.max(0, (r.timeOut ?? now) - r.timeIn)) : "";
+      // Check if shift spans multiple days (night shift)
+      const timeInDate = getDateFromTimestamp(r.timeIn);
+      const timeOutDate = r.timeOut ? getDateFromTimestamp(r.timeOut) : "";
+      const isNightShift = timeOutDate && timeInDate !== timeOutDate;
+      const notes = isNightShift ? "Night Shift (spans to next day)" : "";
+      
+      return [r.playerId, r.playerName, r.date, formatTime(r.timeIn), formatTime(r.timeOut), worked, r.status, notes]
+        .map(escape)
+        .join(",");
+    });
+    const csv = [header.join(","), ...rowLines].join("\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename=attendance_${date}.csv`);
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting CSV:', error);
+    res.status(500).json({ error: "Failed to export CSV" });
+  }
+});
+
+// Get all unique dates with attendance records
+app.get("/api/attendance/dates", async (req, res) => {
+  try {
+    const dates = await db.getAllAttendanceDates();
+    res.json(dates);
+  } catch (error) {
+    console.error('Error fetching attendance dates:', error);
+    res.status(500).json({ error: "Failed to fetch attendance dates" });
+  }
+});
+
+// Delete all attendance for a specific date
+app.delete("/api/attendance/by-date", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const date = req.query.date;
+  if (!date) return res.status(400).json({ error: "date query param required (YYYY-MM-DD)" });
+  try {
+    await db.deleteAllAttendanceByDate(String(date));
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Error deleting attendance by date:', error);
+    res.status(500).json({ error: "Failed to delete attendance" });
   }
 });
 

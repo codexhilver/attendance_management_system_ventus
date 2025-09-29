@@ -1,4 +1,5 @@
 import { PlayerManagement } from "./PlayerManagement";
+import { AttendanceHistory } from "./AttendanceHistory";
 import { AdminAuth } from "./AdminAuth";
 import { Toaster, toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -313,6 +314,16 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
             >
               Player Management
             </button>
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "history"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Attendance History
+            </button>
           </nav>
         </div>
 
@@ -331,8 +342,10 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
               onRefreshToday={refreshToday}
               clearCountdown={clearCountdown}
             />
-          ) : (
+          ) : activeTab === "players" ? (
             <PlayerManagement isAdminAuthenticated={isAdminAuthenticated} />
+          ) : (
+            <AttendanceHistory isAdminAuthenticated={isAdminAuthenticated} />
           )}
         </div>
       </div>
@@ -469,9 +482,16 @@ function AttendanceTab({
                   {/* Current Status */}
                   {attendance && (
                     <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                      {attendance.isFromYesterday && (
+                        <div className="mb-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-sm text-yellow-800">
+                          <strong>Night Shift:</strong> This is from yesterday's shift. Please time out to complete.
+                        </div>
+                      )}
                       {attendance.timeIn && (
                         <div className="flex justify-between">
-                          <span className="font-medium text-gray-600">Time In:</span>
+                          <span className="font-medium text-gray-600">
+                            Time In{attendance.isFromYesterday ? ' (Yesterday)' : ''}:
+                          </span>
                           <span className="font-semibold text-green-600">
                             {formatTime(attendance.timeIn)}
                           </span>
@@ -495,6 +515,12 @@ function AttendanceTab({
                           {attendance.status}
                         </span>
                       </div>
+                      {attendance.date && (
+                        <div className="flex justify-between text-sm text-gray-500">
+                          <span>Date:</span>
+                          <span>{attendance.date}</span>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -506,21 +532,28 @@ function AttendanceTab({
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        onClick={handleTimeIn}
-                        disabled={attendance?.timeIn != null}
-                        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-                      >
-                        Time In
-                      </button>
-                      <button
-                        onClick={handleTimeOut}
-                        disabled={attendance?.timeIn == null || attendance?.timeOut != null}
-                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-                      >
-                        Time Out
-                      </button>
+                    <div className="space-y-2">
+                      {attendance?.isFromYesterday && (
+                        <div className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                          Please complete yesterday's time out before starting a new shift.
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={handleTimeIn}
+                          disabled={attendance?.timeIn != null || attendance?.isFromYesterday}
+                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                        >
+                          Time In
+                        </button>
+                        <button
+                          onClick={handleTimeOut}
+                          disabled={attendance?.timeIn == null || attendance?.timeOut != null}
+                          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                        >
+                          Time Out
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

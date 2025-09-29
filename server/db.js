@@ -136,6 +136,23 @@ export const db = {
     };
   },
 
+  async getPlayerAttendanceYesterday(playerId) {
+    await ensureSchema();
+    const today = getTodayUTC8();
+    const yesterday = new Date(new Date(today).getTime() - (24 * 60 * 60 * 1000))
+      .toISOString().slice(0, 10);
+    const { rows } = await sql`
+      SELECT * FROM attendance WHERE "playerId" = ${playerId} AND date = ${yesterday} LIMIT 1
+    `;
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...row,
+      timeIn: row.timeIn ? Number(row.timeIn) : null,
+      timeOut: row.timeOut ? Number(row.timeOut) : null
+    };
+  },
+
   async timeIn(playerId, playerName) {
     await ensureSchema();
     const today = getTodayUTC8();
@@ -171,10 +188,32 @@ export const db = {
 
   async timeOut(playerId) {
     await ensureSchema();
-    const record = await this.getPlayerAttendanceToday(playerId);
-    if (!record) throw new Error('No attendance record found for today');
+    
+    // First check today's record
+    let record = await this.getPlayerAttendanceToday(playerId);
+    
+    // If no record today, check yesterday (for night shift workers)
+    if (!record) {
+      const today = getTodayUTC8();
+      const yesterday = new Date(new Date(today).getTime() - (24 * 60 * 60 * 1000))
+        .toISOString().slice(0, 10);
+      
+      const { rows } = await sql`
+        SELECT * FROM attendance WHERE "playerId" = ${playerId} AND date = ${yesterday} LIMIT 1
+      `;
+      
+      if (rows[0]) {
+        record = {
+          ...rows[0],
+          timeIn: rows[0].timeIn ? Number(rows[0].timeIn) : null,
+          timeOut: rows[0].timeOut ? Number(rows[0].timeOut) : null
+        };
+      }
+    }
+    
+    if (!record) throw new Error('No attendance record found for today or yesterday. Please time in first.');
     if (!record.timeIn) throw new Error('Must time in first');
-    if (record.timeOut) throw new Error('Already timed out today');
+    if (record.timeOut) throw new Error('Already timed out');
 
     const now = Date.now();
     const { rows } = await sql`
@@ -218,6 +257,20 @@ export const db = {
     await ensureSchema();
     const theDate = date || getTodayUTC8();
     await sql`DELETE FROM attendance WHERE "playerId" = ${playerId} AND date = ${theDate}`;
+    return true;
+  },
+
+  async getAllAttendanceDates() {
+    await ensureSchema();
+    const { rows } = await sql`
+      SELECT DISTINCT date FROM attendance ORDER BY date DESC
+    `;
+    return rows.map(r => r.date);
+  },
+
+  async deleteAllAttendanceByDate(date) {
+    await ensureSchema();
+    await sql`DELETE FROM attendance WHERE date = ${date}`;
     return true;
   }
 };
