@@ -47,6 +47,7 @@ export default function App() {
 function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: boolean }) {
   const [activeTab, setActiveTab] = useState("attendance");
   const [playerId, setPlayerId] = useState("");
+  const [debouncedPlayerId, setDebouncedPlayerId] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [player, setPlayer] = useState<any | null>(null);
   const [attendance, setAttendance] = useState<any | null>(null);
@@ -74,8 +75,17 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
     refreshToday();
   }, [currentTime]);
 
+  // Debounce playerId input to avoid excessive API calls
   useEffect(() => {
-    if (!playerId) {
+    const timer = setTimeout(() => {
+      setDebouncedPlayerId(playerId);
+    }, 300); // Wait 300ms after user stops typing
+    
+    return () => clearTimeout(timer);
+  }, [playerId]);
+
+  useEffect(() => {
+    if (!debouncedPlayerId) {
       setPlayer(null);
       setAttendance(null);
       return;
@@ -84,14 +94,38 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
     setPlayer(undefined);
     setAttendance(null);
     
+    // Use AbortController to cancel stale requests
+    const abortController = new AbortController();
     const API_BASE = import.meta.env.VITE_API_URL || '';
-    fetch(`${API_BASE}/api/players/${encodeURIComponent(playerId)}`)
+    
+    fetch(`${API_BASE}/api/players/${encodeURIComponent(debouncedPlayerId)}`, {
+      signal: abortController.signal
+    })
       .then(async (r) => (r.ok ? r.json() : null))
-      .then((p) => setPlayer(p));
-    fetch(`${API_BASE}/api/attendance/player/today?playerId=${encodeURIComponent(playerId)}`)
+      .then((p) => setPlayer(p))
+      .catch((err) => {
+        // Ignore abort errors
+        if (err.name !== 'AbortError') {
+          console.error('Error fetching player:', err);
+          setPlayer(null);
+        }
+      });
+      
+    fetch(`${API_BASE}/api/attendance/player/today?playerId=${encodeURIComponent(debouncedPlayerId)}`, {
+      signal: abortController.signal
+    })
       .then(async (r) => r.json())
-      .then((a) => setAttendance(a));
-  }, [playerId]);
+      .then((a) => setAttendance(a))
+      .catch((err) => {
+        // Ignore abort errors
+        if (err.name !== 'AbortError') {
+          console.error('Error fetching attendance:', err);
+        }
+      });
+    
+    // Cleanup: abort pending requests when playerId changes
+    return () => abortController.abort();
+  }, [debouncedPlayerId]);
 
   const reloadAttendance = async (id: string) => {
     const API_BASE = import.meta.env.VITE_API_URL || '';
