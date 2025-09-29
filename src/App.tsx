@@ -314,16 +314,18 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
             >
               Player Management
             </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "history"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Attendance History
-            </button>
+            {isAdminAuthenticated && (
+              <button
+                onClick={() => setActiveTab("history")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "history"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Attendance History
+              </button>
+            )}
           </nav>
         </div>
 
@@ -344,8 +346,12 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
             />
           ) : activeTab === "players" ? (
             <PlayerManagement isAdminAuthenticated={isAdminAuthenticated} />
-          ) : (
+          ) : activeTab === "history" && isAdminAuthenticated ? (
             <AttendanceHistory isAdminAuthenticated={isAdminAuthenticated} />
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>Access denied. Admin authentication required.</p>
+            </div>
           )}
         </div>
       </div>
