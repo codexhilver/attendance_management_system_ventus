@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from "express";
 import cors from "cors";
-import { db } from "./supabase.js";
+import { db } from "./db.js";
 
 const app = express();
 app.use(cors());
@@ -273,8 +273,8 @@ app.get("/api/attendance/export/today", async (req, res) => {
 // When running locally (e.g., `npm run dev`), we start a listener.
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5174;
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Local API listening on http://localhost:${PORT}`);
+  app.listen(PORT, '127.0.0.1', () => {
+    console.log(`Local API listening on http://127.0.0.1:${PORT}`);
   });
 }
 

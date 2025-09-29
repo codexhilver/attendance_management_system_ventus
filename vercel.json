@@ -22,9 +22,5 @@
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
-  ],
-  "env": {
-    "SUPABASE_KEY": "@supabase_key",
-    "ADMIN_PIN": "@admin_pin"
-  }
+  ]
 }

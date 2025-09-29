@@ -8,12 +8,10 @@
     "dev:frontend": "vite --open",
     "dev:server": "node server/index.js",
     "build": "vite build",
-    "lint": "tsc -p . -noEmit --pretty false && vite build",
-    "migrate": "node migrate-data.js"
+    "lint": "tsc -p . -noEmit --pretty false && vite build"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.58.0",
-    "better-sqlite3": "^11.7.0",
+    "@vercel/postgres": "^0.9.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
