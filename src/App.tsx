@@ -394,6 +394,14 @@ function AttendanceTab({
                         <span>{player.team}</span>
                       </div>
                     )}
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-600">Status:</span>
+                      <span className={`font-semibold capitalize ${
+                        player.status === "inactive" ? "text-red-600" : "text-green-600"
+                      }`}>
+                        {player.status || "active"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
