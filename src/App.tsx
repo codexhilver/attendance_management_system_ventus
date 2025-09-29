@@ -442,22 +442,30 @@ function AttendanceTab({
                   )}
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={handleTimeIn}
-                      disabled={attendance?.timeIn != null}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-                    >
-                      Time In
-                    </button>
-                    <button
-                      onClick={handleTimeOut}
-                      disabled={attendance?.timeIn == null || attendance?.timeOut != null}
-                      className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-                    >
-                      Time Out
-                    </button>
-                  </div>
+                  {player.status === 'inactive' ? (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                      <p className="text-red-600 font-semibold">
+                        This player is inactive and cannot perform attendance actions.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={handleTimeIn}
+                        disabled={attendance?.timeIn != null}
+                        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                      >
+                        Time In
+                      </button>
+                      <button
+                        onClick={handleTimeOut}
+                        disabled={attendance?.timeIn == null || attendance?.timeOut != null}
+                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                      >
+                        Time Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

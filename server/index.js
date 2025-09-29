@@ -174,6 +174,13 @@ app.post("/api/attendance/time-in", async (req, res) => {
   const { playerId, playerName } = req.body ?? {};
   if (!playerId || !playerName) return res.status(400).json({ error: "playerId and playerName are required" });
   try {
+    // Check if player is active
+    const player = await db.getPlayer(playerId);
+    if (!player) return res.status(404).json({ error: "Player not found" });
+    if (player.status === 'inactive') {
+      return res.status(403).json({ error: "Cannot time in: Player is inactive" });
+    }
+    
     const result = await db.timeIn(playerId, playerName);
     res.status(201).json({ ok: true, id: result.id });
   } catch (e) {
@@ -190,6 +197,13 @@ app.post("/api/attendance/time-out", async (req, res) => {
   const { playerId } = req.body ?? {};
   if (!playerId) return res.status(400).json({ error: "playerId is required" });
   try {
+    // Check if player is active
+    const player = await db.getPlayer(playerId);
+    if (!player) return res.status(404).json({ error: "Player not found" });
+    if (player.status === 'inactive') {
+      return res.status(403).json({ error: "Cannot time out: Player is inactive" });
+    }
+    
     const result = await db.timeOut(playerId);
     res.json({ ok: true, id: result.id });
   } catch (e) {
