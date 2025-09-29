@@ -24,12 +24,14 @@ export default function App() {
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm h-16 flex justify-between items-center border-b shadow-sm px-4">
         <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
         <div className="flex items-center gap-4">
-          <a
-            href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
-            className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
-          >
-            Export Today CSV
-          </a>
+          {isAdminAuthenticated && (
+            <a
+              href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
+              className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
+            >
+              Export Today CSV
+            </a>
+          )}
           <AdminAuth 
             isAuthenticated={isAdminAuthenticated} 
             onAuthenticate={handleAdminAuth} 
