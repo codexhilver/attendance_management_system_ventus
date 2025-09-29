@@ -52,6 +52,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   const [player, setPlayer] = useState<any | null>(null);
   const [attendance, setAttendance] = useState<any | null>(null);
   const [todayAttendance, setTodayAttendance] = useState<any[]>([]);
+  const [clearCountdown, setClearCountdown] = useState<number | null>(null);
   
 
   // Update current time every second
@@ -168,6 +169,25 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
       setCurrentTime(new Date());
       // Ensure we have server-confirmed state
       await reloadAttendance(player.playerId);
+      
+      // Start countdown and clear player ID after 3 seconds to prevent accidental early time out
+      setClearCountdown(3);
+      const countdownInterval = setInterval(() => {
+        setClearCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimeout(() => {
+        setPlayerId("");
+        setPlayer(null);
+        setAttendance(null);
+        setClearCountdown(null);
+      }, 3000);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to time in");
     }
@@ -288,6 +308,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
               formatTime={formatTime}
               isAdminAuthenticated={isAdminAuthenticated}
               onRefreshToday={refreshToday}
+              clearCountdown={clearCountdown}
             />
           ) : (
             <PlayerManagement isAdminAuthenticated={isAdminAuthenticated} />
@@ -309,6 +330,7 @@ function AttendanceTab({
   formatTime,
   isAdminAuthenticated,
   onRefreshToday,
+  clearCountdown,
 }: {
   playerId: string;
   setPlayerId: (id: string) => void;
@@ -320,6 +342,7 @@ function AttendanceTab({
   formatTime: (timestamp: number) => string;
   isAdminAuthenticated: boolean;
   onRefreshToday: () => Promise<void> | void;
+  clearCountdown: number | null;
 }) {
   return (
     <div className="space-y-8">
@@ -355,11 +378,24 @@ function AttendanceTab({
                 <p className="text-sm">Please check the Player ID and try again</p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Player Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Player Information</h3>
-                  <div className="space-y-3">
+              <>
+                {/* Countdown Warning */}
+                {clearCountdown !== null && (
+                  <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <p className="text-yellow-800 font-semibold">
+                      Form will clear in {clearCountdown} second{clearCountdown !== 1 ? 's' : ''}...
+                    </p>
+                    <p className="text-sm text-yellow-600 mt-1">
+                      Re-enter Player ID to perform Time Out
+                    </p>
+                  </div>
+                )}
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Player Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Player Information</h3>
+                    <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="font-medium text-gray-600">Player ID:</span>
                       <span className="font-semibold">{player.playerId}</span>
@@ -468,6 +504,7 @@ function AttendanceTab({
                   )}
                 </div>
               </div>
+              </>
             )}
           </div>
         )}
