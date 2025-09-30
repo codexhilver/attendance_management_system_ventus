@@ -593,11 +593,19 @@ function AttendanceTab({
               </thead>
               <tbody>
                 {todayAttendance.map((record: any) => (
-                  <tr key={`${record.playerId}-${record.date}`} className="border-b hover:bg-gray-50">
+                  <tr key={`${record.playerId}-${record.date}-${record.isFromYesterday ? 'yesterday' : 'today'}`} className={`border-b hover:bg-gray-50 ${record.isFromYesterday ? 'bg-yellow-50' : ''}`}>
                     <td className="py-2 px-4 font-mono">{record.playerId}</td>
-                    <td className="py-2 px-4">{record.playerName}</td>
+                    <td className="py-2 px-4">
+                      {record.playerName}
+                      {record.isFromYesterday && (
+                        <span className="ml-2 text-xs text-yellow-700 font-semibold">(Night Shift)</span>
+                      )}
+                    </td>
                     <td className="py-2 px-4">
                       {record.timeIn ? formatTime(record.timeIn) : '-'}
+                      {record.isFromYesterday && (
+                        <span className="ml-1 text-xs text-yellow-600">(Yesterday)</span>
+                      )}
                     </td>
                     <td className="py-2 px-4">
                       {record.timeOut ? formatTime(record.timeOut) : '-'}

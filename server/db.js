@@ -85,14 +85,40 @@ export const db = {
   async getTodayAttendance() {
     await ensureSchema();
     const today = getTodayUTC8();
-    const { rows } = await sql`
+    const yesterday = new Date(new Date(today).getTime() - (24 * 60 * 60 * 1000))
+      .toISOString().slice(0, 10);
+    
+    // Get today's records
+    const { rows: todayRows } = await sql`
       SELECT * FROM attendance WHERE date = ${today} ORDER BY "playerName" ASC
     `;
-    return rows.map(r => ({
-      ...r,
-      timeIn: r.timeIn ? Number(r.timeIn) : null,
-      timeOut: r.timeOut ? Number(r.timeOut) : null
-    }));
+    
+    // Get yesterday's incomplete records (no time out) for night shift workers
+    const { rows: yesterdayRows } = await sql`
+      SELECT * FROM attendance 
+      WHERE date = ${yesterday} 
+      AND "timeIn" IS NOT NULL 
+      AND "timeOut" IS NULL
+      ORDER BY "playerName" ASC
+    `;
+    
+    // Combine and mark yesterday's records
+    const allRows = [
+      ...todayRows.map(r => ({
+        ...r,
+        timeIn: r.timeIn ? Number(r.timeIn) : null,
+        timeOut: r.timeOut ? Number(r.timeOut) : null,
+        isFromYesterday: false
+      })),
+      ...yesterdayRows.map(r => ({
+        ...r,
+        timeIn: r.timeIn ? Number(r.timeIn) : null,
+        timeOut: r.timeOut ? Number(r.timeOut) : null,
+        isFromYesterday: true
+      }))
+    ];
+    
+    return allRows;
   },
 
   async getAttendanceByDate(date) {
