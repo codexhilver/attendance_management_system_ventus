@@ -150,26 +150,26 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Player Management</h2>
+    <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <h2 className="text-lg md:text-xl font-semibold">Player Management</h2>
         {isAdminAuthenticated ? (
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
           >
             {showForm ? "Cancel" : "Add Player"}
           </button>
         ) : (
-          <span className="text-sm text-gray-500">Admin authentication required to add players</span>
+          <span className="text-xs md:text-sm text-gray-500">Admin authentication required to add players</span>
         )}
       </div>
 
       {/* Form section with ref for scroll */}
       <div ref={formRef}>
         {showForm && isAdminAuthenticated && (
-          <form onSubmit={handleSubmit} className="mb-8 p-6 bg-gray-50 rounded-lg">
-            <div className="grid md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="mb-8 p-4 md:p-6 bg-gray-50 rounded-lg">
+            <div className="grid md:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Player ID *
@@ -181,7 +181,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   onChange={handleInputChange}
                   disabled={editingId !== null}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -194,7 +194,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   value={formData.fullName}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -208,7 +208,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   onChange={handleInputChange}
                   required
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -221,7 +221,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -233,7 +233,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -245,7 +245,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   name="position"
                   value={formData.position}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -257,7 +257,7 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   name="team"
                   value={formData.team}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -268,17 +268,17 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
             </div>
-            <div className="mt-6">
+            <div className="mt-4 md:mt-6">
               <button
                 type="submit"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="px-4 md:px-6 py-2 text-sm md:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto"
               >
                 {editingId ? "Update Player" : "Create Player"}
               </button>
@@ -288,13 +288,13 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
       </div>
 
       {/* Search Bar */}
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-center sm:justify-between">
         <input
           type="text"
           placeholder="Search by Player ID, Name, or Email"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full md:w-1/3 px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
@@ -308,18 +308,18 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
         ) : filteredPlayers.length === 0 ? (
           <p className="text-gray-500 text-center py-4">No players found</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full table-auto min-w-[800px]">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-4">Player ID</th>
-                  <th className="text-left py-2 px-4">Name</th>
-                  <th className="text-left py-2 px-4">Age</th>
-                  <th className="text-left py-2 px-4">Email</th>
-                  <th className="text-left py-2 px-4">Position</th>
-                  <th className="text-left py-2 px-4">Team</th>
-                  <th className="text-left py-2 px-4">Status</th>
-                  <th className="text-right py-2 px-4">Actions</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Player ID</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Name</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Age</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Email</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Position</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Team</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Status</th>
+                  <th className="text-right py-2 px-2 md:px-4 text-xs md:text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -328,25 +328,25 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                     key={player.playerId}
                     className={`border-b hover:bg-gray-50 ${player.status === "inactive" ? "bg-red-100" : ""}`}
                   >
-                    <td className={`py-2 px-4 font-mono ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 font-mono text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.playerId}
                     </td>
-                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.fullName}
                     </td>
-                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.age}
                     </td>
-                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.email}
                     </td>
-                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.position || '-'}
                     </td>
-                    <td className={`py-2 px-4 ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
+                    <td className={`py-2 px-2 md:px-4 text-xs md:text-sm ${player.status === "inactive" ? "text-red-600 font-bold" : ""}`}>
                       {player.team || '-'}
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-2 md:px-4">
                       {isAdminAuthenticated ? (
                         <select
                           value={player.status || "active"}
@@ -391,31 +391,31 @@ export function PlayerManagement({ isAdminAuthenticated }: { isAdminAuthenticate
                               refresh();
                             }
                           }}
-                          className={`px-2 py-1 rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
+                          className={`px-2 py-1 text-xs md:text-sm rounded ${player.status === "inactive" ? "bg-red-200 text-red-700 font-bold" : ""}`}
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                         </select>
                       ) : (
-                        <span className={`px-2 py-1 rounded font-semibold capitalize ${
+                        <span className={`px-2 py-1 rounded text-xs md:text-sm font-semibold capitalize ${
                           player.status === "inactive" ? "text-red-600" : "text-green-600"
                         }`}>
                           {player.status || "active"}
                         </span>
                       )}
                     </td>
-                    <td className="py-2 px-4 text-right">
+                    <td className="py-2 px-2 md:px-4 text-right">
                       {isAdminAuthenticated ? (
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 justify-end">
                           <button
                             onClick={() => handleEdit(player)}
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                            className="px-2 md:px-3 py-1 text-xs md:text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(player.playerId)}
-                            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                            className="px-2 md:px-3 py-1 text-xs md:text-sm bg-red-600 text-white rounded hover:bg-red-700"
                           >
                             Delete
                           </button>

@@ -22,13 +22,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm h-16 flex justify-between items-center border-b shadow-sm px-4">
-        <h2 className="text-xl font-semibold text-blue-600">Attendance</h2>
-        <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm h-auto md:h-16 flex flex-col md:flex-row justify-between items-center border-b shadow-sm px-4 py-3 md:py-0 gap-3 md:gap-0">
+        <h2 className="text-lg md:text-xl font-semibold text-blue-600">Attendance</h2>
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
           {isAdminAuthenticated && (
             <a
               href={`${import.meta.env.VITE_API_URL || ''}/api/attendance/export/today`}
-              className="px-4 py-2 rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
+              className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base rounded bg-white text-secondary border border-gray-200 font-semibold hover:bg-gray-50 transition-colors shadow-sm hover:shadow"
             >
               Export Today CSV
             </a>
@@ -39,7 +39,7 @@ export default function App() {
           />
         </div>
       </header>
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-8">
         <AttendanceSystem isAdminAuthenticated={isAdminAuthenticated} />
       </main>
       <Toaster />
@@ -280,11 +280,11 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
   return (
     <div className="space-y-8">
       {/* Header with Real-time Clock */}
-      <div className="text-center bg-white rounded-lg shadow-sm p-6">
-        <h1 className="text-3xl font-bold text-blue-600 mb-2">Boundless Players Attendance</h1>
-        <div className="text-lg text-gray-600">
-          <div className="font-semibold text-4xl">{formatDate(currentTime)}</div>
-          <div className="text-8xl font-mono text-blue-600 mt-2">
+      <div className="text-center bg-white rounded-lg shadow-sm p-4 md:p-6">
+        <h1 className="text-xl md:text-3xl font-bold text-blue-600 mb-2">Boundless Players Attendance</h1>
+        <div className="text-sm md:text-lg text-gray-600">
+          <div className="font-semibold text-lg md:text-4xl">{formatDate(currentTime)}</div>
+          <div className="text-4xl md:text-8xl font-mono text-blue-600 mt-2">
             {formatCurrentTime(currentTime)}
           </div>
         </div>
@@ -292,11 +292,11 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+        <div className="border-b border-gray-200 overflow-x-auto">
+          <nav className="flex space-x-4 md:space-x-8 px-4 md:px-6 min-w-max md:min-w-0">
             <button
               onClick={() => setActiveTab("attendance")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-xs md:text-sm whitespace-nowrap ${
                 activeTab === "attendance"
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -306,7 +306,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
             </button>
             <button
               onClick={() => setActiveTab("players")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 md:py-4 px-1 border-b-2 font-medium text-xs md:text-sm whitespace-nowrap ${
                 activeTab === "players"
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -317,7 +317,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
             {isAdminAuthenticated && (
               <button
                 onClick={() => setActiveTab("history")}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 md:py-4 px-1 border-b-2 font-medium text-xs md:text-sm whitespace-nowrap ${
                   activeTab === "history"
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -329,7 +329,7 @@ function AttendanceSystem({ isAdminAuthenticated }: { isAdminAuthenticated: bool
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {activeTab === "attendance" ? (
             <AttendanceTab
               playerId={playerId}
@@ -385,21 +385,21 @@ function AttendanceTab({
   clearCountdown: number | null;
 }) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Player Lookup */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Player Lookup</h2>
-        <div className="flex gap-4 mb-6">
+        <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Player Lookup</h2>
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
           <input
             type="text"
             placeholder="Enter Player ID"
             value={playerId}
             onChange={(e) => setPlayerId(e.target.value.trim())}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <button
             onClick={() => setPlayerId("")}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 text-sm md:text-base bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors w-full sm:w-auto"
           >
             Clear
           </button>
@@ -407,7 +407,7 @@ function AttendanceTab({
 
         {/* Player Details */}
         {playerId && (
-          <div className="border-t pt-6">
+          <div className="border-t pt-4 md:pt-6">
             {player === undefined ? (
               <div className="flex justify-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -421,56 +421,56 @@ function AttendanceTab({
               <>
                 {/* Countdown Warning */}
                 {clearCountdown !== null && (
-                  <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                    <p className="text-yellow-800 font-semibold">
+                  <div className="mb-3 md:mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 md:p-4 text-center">
+                    <p className="text-sm md:text-base text-yellow-800 font-semibold">
                       Form will clear in {clearCountdown} second{clearCountdown !== 1 ? 's' : ''}...
                     </p>
-                    <p className="text-sm text-yellow-600 mt-1">
+                    <p className="text-xs md:text-sm text-yellow-600 mt-1">
                       Thanks for your hardwork! :)
                     </p>
                   </div>
                 )}
                 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                   {/* Player Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Player Information</h3>
-                    <div className="space-y-3">
-                    <div className="flex justify-between">
+                  <div className="space-y-3 md:space-y-4">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800">Player Information</h3>
+                    <div className="space-y-2 md:space-y-3">
+                    <div className="flex justify-between text-sm md:text-base gap-2">
                       <span className="font-medium text-gray-600">Player ID:</span>
-                      <span className="font-semibold">{player.playerId}</span>
+                      <span className="font-semibold break-all text-right">{player.playerId}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm md:text-base gap-2">
                       <span className="font-medium text-gray-600">Full Name:</span>
-                      <span className="font-semibold">{player.fullName}</span>
+                      <span className="font-semibold break-words text-right">{player.fullName}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm md:text-base gap-2">
                       <span className="font-medium text-gray-600">Age:</span>
                       <span>{player.age}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm md:text-base gap-2">
                       <span className="font-medium text-gray-600">Email:</span>
-                      <span>{player.email}</span>
+                      <span className="break-all text-right">{player.email}</span>
                     </div>
                     {player.phone && (
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm md:text-base gap-2">
                         <span className="font-medium text-gray-600">Phone:</span>
-                        <span>{player.phone}</span>
+                        <span className="break-all text-right">{player.phone}</span>
                       </div>
                     )}
                     {player.position && (
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm md:text-base gap-2">
                         <span className="font-medium text-gray-600">Position:</span>
-                        <span>{player.position}</span>
+                        <span className="break-words text-right">{player.position}</span>
                       </div>
                     )}
                     {player.team && (
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm md:text-base gap-2">
                         <span className="font-medium text-gray-600">Team:</span>
-                        <span>{player.team}</span>
+                        <span className="break-words text-right">{player.team}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-sm md:text-base gap-2">
                       <span className="font-medium text-gray-600">Status:</span>
                       <span className={`font-semibold capitalize ${
                         player.status === "inactive" ? "text-red-600" : "text-green-600"
@@ -482,19 +482,19 @@ function AttendanceTab({
                 </div>
 
                 {/* Attendance Actions */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Today's Attendance</h3>
+                <div className="space-y-3 md:space-y-4">
+                  <h3 className="text-base md:text-lg font-semibold text-gray-800">Today's Attendance</h3>
                   
                   {/* Current Status */}
                   {attendance && (
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="bg-gray-50 rounded-lg p-3 md:p-4 space-y-2">
                       {attendance.isFromYesterday && (
-                        <div className="mb-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-sm text-yellow-800">
+                        <div className="mb-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs md:text-sm text-yellow-800">
                           <strong>Night Shift:</strong> This is from yesterday's shift. Please time out to complete.
                         </div>
                       )}
                       {attendance.timeIn && (
-                        <div className="flex justify-between">
+                        <div className="flex justify-between text-sm md:text-base gap-2">
                           <span className="font-medium text-gray-600">
                             Time In{attendance.isFromYesterday ? ' (Yesterday)' : ''}:
                           </span>
@@ -504,7 +504,7 @@ function AttendanceTab({
                         </div>
                       )}
                       {attendance.timeOut && (
-                        <div className="flex justify-between">
+                        <div className="flex justify-between text-sm md:text-base gap-2">
                           <span className="font-medium text-gray-600">Time Out:</span>
                           <span className="font-semibold text-red-600">
                             {formatTime(attendance.timeOut)}
@@ -512,7 +512,7 @@ function AttendanceTab({
                         </div>
                       )}
                       
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm md:text-base gap-2">
                         <span className="font-medium text-gray-600">Status:</span>
                         <span className={`font-semibold capitalize ${
                           attendance.status === 'present' ? 'text-green-600' : 
@@ -522,7 +522,7 @@ function AttendanceTab({
                         </span>
                       </div>
                       {attendance.date && (
-                        <div className="flex justify-between text-sm text-gray-500">
+                        <div className="flex justify-between text-xs md:text-sm text-gray-500 gap-2">
                           <span>Date:</span>
                           <span>{attendance.date}</span>
                         </div>
@@ -532,30 +532,30 @@ function AttendanceTab({
 
                   {/* Action Buttons */}
                   {player.status === 'inactive' ? (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                      <p className="text-red-600 font-semibold">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 md:p-4 text-center">
+                      <p className="text-sm md:text-base text-red-600 font-semibold">
                         This player is inactive and cannot perform attendance actions.
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {attendance?.isFromYesterday && (
-                        <div className="text-sm text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <div className="text-xs md:text-sm text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200">
                           Please complete yesterday's time out before starting a new shift.
                         </div>
                       )}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3 md:gap-4">
                         <button
                           onClick={handleTimeIn}
                           disabled={attendance?.timeIn != null || attendance?.isFromYesterday}
-                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                          className="px-4 md:px-6 py-2 md:py-3 text-sm md:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
                         >
                           Time In
                         </button>
                         <button
                           onClick={handleTimeOut}
                           disabled={attendance?.timeIn == null || attendance?.timeOut != null}
-                          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
+                          className="px-4 md:px-6 py-2 md:py-3 text-sm md:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
                         >
                           Time Out
                         </button>
@@ -572,46 +572,46 @@ function AttendanceTab({
 
       {/* Today's Attendance Summary */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Today's Attendance Summary</h2>
+        <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Today's Attendance Summary</h2>
         {todayAttendance === undefined ? (
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
           </div>
         ) : todayAttendance.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No attendance records for today</p>
+          <p className="text-sm md:text-base text-gray-500 text-center py-4">No attendance records for today</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full table-auto min-w-[640px]">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-4">Player ID</th>
-                  <th className="text-left py-2 px-4">Name</th>
-                  <th className="text-left py-2 px-4">Time In</th>
-                  <th className="text-left py-2 px-4">Time Out</th>
-                  <th className="text-left py-2 px-4">Status</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Player ID</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Name</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Time In</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Time Out</th>
+                  <th className="text-left py-2 px-2 md:px-4 text-xs md:text-sm">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {todayAttendance.map((record: any) => (
                   <tr key={`${record.playerId}-${record.date}-${record.isFromYesterday ? 'yesterday' : 'today'}`} className={`border-b hover:bg-gray-50 ${record.isFromYesterday ? 'bg-yellow-50' : ''}`}>
-                    <td className="py-2 px-4 font-mono">{record.playerId}</td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-2 md:px-4 font-mono text-xs md:text-sm">{record.playerId}</td>
+                    <td className="py-2 px-2 md:px-4 text-xs md:text-sm">
                       {record.playerName}
                       {record.isFromYesterday && (
-                        <span className="ml-2 text-xs text-yellow-700 font-semibold">(Night Shift)</span>
+                        <span className="ml-1 md:ml-2 text-xs text-yellow-700 font-semibold block md:inline">(Night Shift)</span>
                       )}
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-2 md:px-4 text-xs md:text-sm">
                       {record.timeIn ? formatTime(record.timeIn) : '-'}
                       {record.isFromYesterday && (
-                        <span className="ml-1 text-xs text-yellow-600">(Yesterday)</span>
+                        <span className="ml-1 text-xs text-yellow-600 block md:inline">(Yesterday)</span>
                       )}
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-2 md:px-4 text-xs md:text-sm">
                       {record.timeOut ? formatTime(record.timeOut) : '-'}
                     </td>
-                    <td className="py-2 px-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    <td className="py-2 px-2 md:px-4">
+                      <span className={`px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-semibold ${
                         record.status === 'present' ? 'bg-green-100 text-green-800' :
                         record.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
@@ -619,9 +619,9 @@ function AttendanceTab({
                         {record.status}
                       </span>
                     </td>
-                    <td className="py-2 px-4 text-right">
+                    <td className="py-2 px-2 md:px-4 text-right">
                       {isAdminAuthenticated ? (
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex flex-col md:flex-row gap-1 md:gap-2 justify-end">
                           <button
                             onClick={async () => {
                               const newStatus = record.status === 'present' ? 'partial' : record.status === 'partial' ? 'absent' : 'present';
@@ -639,7 +639,7 @@ function AttendanceTab({
                               toast.success('Status updated');
                               await onRefreshToday();
                             }}
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                            className="px-2 md:px-3 py-1 text-xs md:text-sm bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
                           >
                             Cycle Status
                           </button>
@@ -657,7 +657,7 @@ function AttendanceTab({
                               toast.success('Attendance deleted');
                               await onRefreshToday();
                             }}
-                            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                            className="px-2 md:px-3 py-1 text-xs md:text-sm bg-red-600 text-white rounded hover:bg-red-700"
                           >
                             Delete
                           </button>
